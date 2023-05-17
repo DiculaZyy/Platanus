@@ -1,0 +1,15 @@
+{
+    "exec": "ts-node ./src/index.ts",
+    "ignore": [
+        "node_modules",
+        "dist"
+    ],
+    "events": {
+        "restart": ""
+    },
+    "watch": [
+        "src"
+    ],
+    "ext": "ts tsx",
+    "inspect": true
+}

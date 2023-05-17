@@ -1,0 +1,14 @@
+{
+  "name": "node-vue-todo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "DiculaZyy",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^5.0.2"
+  }
+}
