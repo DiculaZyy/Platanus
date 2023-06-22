@@ -5,9 +5,8 @@
 
 
 ## Getting Started
-进入./server/src/config/constant.ts修改```RootDir```  
-
-进入文件夹（目前只有服务端）
+### 开启服务端
+进入文件夹
 ```
 cd server
 ```
@@ -19,3 +18,22 @@ npm install
 ```
 npm run start
 ```
+
+### 开启客户端
+进入文件夹
+```
+cd client
+```
+安装依赖
+```
+npm install
+```
+构建
+```
+npm run build
+```
+启动
+```
+npm run preview
+```
+
