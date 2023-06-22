@@ -15,7 +15,7 @@ onMounted(() => {
 import Node from './Node.vue'
 import Edge from './Edge.vue'
 import Controller from './Controller.vue';
-import * as AsyncLock from 'async-lock';
+import AsyncLock from 'async-lock';
 import { layout, config } from '../utils/drawtree';
 const nodes = ref([]);
 const edges = ref([]);
