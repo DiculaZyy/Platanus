@@ -64,6 +64,7 @@ export abstract class FileObjNode {
     parent : FolderNode | rootnodes.RootDirNode;
     parentLinks  = [] as LinkNode[];
     children = [] as FileObjNode[];
+    hasChildren = false;
 }
 
 export class FileNode extends FileObjNode {
@@ -90,6 +91,8 @@ export class FolderNode extends FileObjNode {
                     create(d, d.name, this);
                 }
             }
+            if (this.children.length > 0)
+                this.hasChildren = true;
         })();
     }
     readonly type = 'folder' as 'folder';
@@ -209,8 +212,13 @@ export function find(dir : string) {
 }
 
 export async function open(dir : string) {
+    dir = path.normalize(dir);
     const name = path.basename(dir);
     const root = path.dirname(dir);
     const stat = await fs.promises.stat(dir);
     return create(stat, name, root);
+}
+
+export async function clear() {
+    fileObjMap.clear();
 }

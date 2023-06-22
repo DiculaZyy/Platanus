@@ -5,10 +5,8 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface DataNodeSchema {
-  id?: string;
-  name?: string;
-  type?: string;
-  hasChildren?: boolean;
+export interface DirSchema {
+  dir?: string;
+  maxDepth?: number;
   [k: string]: unknown;
 }

@@ -73,3 +73,7 @@ export function remove(dir : string) {
     });
     return children;
 }
+
+export async function clear() {
+    rootnodes = [] as RootDirNode[];
+}

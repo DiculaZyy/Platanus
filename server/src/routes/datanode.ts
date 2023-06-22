@@ -52,7 +52,7 @@ export async function datanodeRoutes(fastify : FastifyInstance,
         }
     }, getParents);
     fastify.get<{
-        Params: iParamsSchema
+        Params: iParamsSchema,
     }>('/datanode/:id/children', {
         schema: {
             params: ParamsSchema,

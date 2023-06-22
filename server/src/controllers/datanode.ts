@@ -1,5 +1,7 @@
 import * as datanode from '../models/datanode';
-import { ParamsSchema, ParamsSchema as iParamsSchema } from '../types/datanode/paramsschema';
+
+import { ParamsSchema as iParamsSchema } from '../types/datanode/paramsschema';
+
 import {
     FastifyRequest,
     FastifyReply
@@ -17,13 +19,16 @@ function getNode(id : string | undefined) {
 
 
 export async function getRoot(
-    request : FastifyRequest<{Params: ParamsSchema}>,
+    request : FastifyRequest<{Params: iParamsSchema}>,
     reply : FastifyReply) {
-    reply.send(datanode.root);
+    if (datanode.root)
+        reply.send(datanode.root);
+    else
+        reply.status(503)
 }
 
 export async function getDataNode(
-    request : FastifyRequest<{Params: ParamsSchema}>,
+    request : FastifyRequest<{Params: iParamsSchema}>,
     reply : FastifyReply) {
     try {
         const node = getNode(request.params.id);
@@ -34,7 +39,7 @@ export async function getDataNode(
 }
 
 export async function getParents(
-    request : FastifyRequest<{Params: ParamsSchema}>,
+    request : FastifyRequest<{Params: iParamsSchema}>,
     reply : FastifyReply) {
     try {
         const node = getNode(request.params.id);
@@ -45,7 +50,7 @@ export async function getParents(
 }
 
 export async function getChildren(
-    request : FastifyRequest<{Params: ParamsSchema}>,
+    request : FastifyRequest<{Params: iParamsSchema}>,
     reply : FastifyReply) {
     try {
         const node = getNode(request.params.id);

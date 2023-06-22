@@ -1,8 +1,9 @@
 import { fastify, FastifyInstance } from 'fastify';
+import cors from '@fastify/cors'
 import { Server, IncomingMessage, ServerResponse } from 'http'
 import { datanodeRoutes } from './routes/datanode';
-import { open as DataNodeOpen } from './models/datanode';
-import { PORT, RootDir, LogPath } from './config/constant';
+import { filesRoutes } from './routes/files';
+import { PORT, LogPath } from './config/constant';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -16,11 +17,13 @@ const server : FastifyInstance<Server, IncomingMessage, ServerResponse> = fastif
 });
 
 
-server.register(datanodeRoutes);
+
 
 const start = async () => {
+    await server.register(datanodeRoutes);
+    await server.register(filesRoutes);
+    await server.register(cors);
     try {
-        await DataNodeOpen(RootDir);
         await server.listen({ port : PORT });
     } catch (err) {
         server.log.error(err);
