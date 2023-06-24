@@ -9,9 +9,6 @@
     "rootDir": "src",
     "resolveJsonModule": true,
 
-    /* JavaScript Support */
-    "allowJs": true,
-
     /* Emit */
     "sourceMap": true,
     "outDir": "build",

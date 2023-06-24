@@ -1,71 +1,38 @@
-<script setup>
+<script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { ref } from 'vue';
-import service from './utils/request'
-const rootDir = ref("")
-const show = ref(false)
-const open = async () => {
-  await service.post('open', {
-    dir : rootDir.value,
-    maxDepth : -1
-  })
-}
 </script>
 
 <template>
   <header>
-    <div class="input">
-      <input v-model="rootDir" placeholder="输入根目录"/>
-      <button @click="async () => { 
-          show = false; 
-          await open();
-          show = true;
-        }"
-      >确定</button>
-    </div>
-    <div class="router">
+    <div class="wrapper">
       <nav>
-        <RouterLink to="/datanode">DataNode</RouterLink>
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/tree">View in Tree</RouterLink>
       </nav>
     </div>
   </header>
-  <RouterView v-if="show"/>
+
+  <RouterView />
 </template>
 
-<style>
-div#app {
-  min-height: 90vh;
-  display : flex;
-  flex-direction: column;
-  text-align : center;
-  align-items: center;
-}
-
+<style scoped>
 header {
+  line-height: 1.5;
   width : 100%;
 }
 
-div.input {
-  margin: auto;
-  padding-bottom: 10px;
-  width : 60%;
-  display : flex;
-  flex-direction: row;
-}
-
-input {
-  flex : auto;
-}
-
-button {
-  flex-shrink : 3rem;
-}
-
-div.router {
-  text-align : center;
-}
-
 nav {
-  display : inline-block;
+  width: 100%;
+  font-size: 20px;
+  text-align: center;
+  margin-top: 2rem;
 }
+
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+
 </style>

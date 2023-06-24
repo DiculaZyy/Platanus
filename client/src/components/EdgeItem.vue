@@ -1,12 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
-const props = defineProps(['v', 'w', 'type'])
+
+import { type Point } from '@/types/items';
+
+
+const props = defineProps<{
+    v : Point;
+    w : Point;
+    type : string;
+}>();
+
 const cpx1 = computed(() => {
     return (2 *props.v.x + props.w.x) / 3
 })
 const cpx2 = computed(() => {
     return (props.v.x + 2 * props.w.x) / 3
 })
+
 </script>
 
 <template>

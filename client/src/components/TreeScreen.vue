@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import svgPanZoom from 'svg-pan-zoom'
 
 onMounted(() => {
-    const zoom = svgPanZoom('.screen', {
+    svgPanZoom('.screen', {
         dblClickZoomEnabled: false,
         fit: true,
         center: true,
@@ -12,41 +12,60 @@ onMounted(() => {
     });
 })
 
-import Node from './Node.vue'
-import Edge from './Edge.vue'
-import Controller from './Controller.vue';
-import AsyncLock from 'async-lock';
-import { layout, config } from '../utils/drawtree';
-const nodes = ref([]);
-const edges = ref([]);
-const controllers = ref([]);
-const show = (v) => {
+import { layout, config, init, type Tree } from '../utils/drawtree';
+let tree : Tree = init({});
+
+import { type Node, type Point } from '@/types/items';
+import NodeItem from './NodeItem.vue';
+import EdgeItem from './EdgeItem.vue';
+import ControllerItem from './ControllerItem.vue';
+const nodes = ref<Array<Node>>([]);
+const edges = ref<Array<{ 
+    v : Point;
+    w : Point;
+    id : string;
+    type : string;
+    class : 'from' | 'to';
+}>>([]);
+const controllers = ref<Array<{
+    node : Tree;
+    x : number;
+    y : number;
+    r : number;
+    showChildren : boolean;
+}>>([]);
+
+
+const show = (v : Tree) => {
     nodes.value = [];
     edges.value = [];
     controllers.value = [];
-    const walk = (v) => {
+    const walk = (v : Tree) => {
         nodes.value.push(v);
         if (v.hasChildren) {
             edges.value.push({
-                class : "from",
                 id : v.id,
+                class : "from",
+                type : "subdir",
                 v : { x : v.x + v.width / 2, y : v.y },
-                w : { x : v.x - v.width / 2 + v.maxwidth 
+                w : { x : v.x - v.width / 2 + v.maxWidth 
                         + config.minMargin.child, y : v.y }
             });
             controllers.value.push({
                 node : v,
                 showChildren : v.showChildren || false,
-                x : v.x - v.width / 2 + v.maxwidth
+                x : v.x - v.width / 2 + v.maxWidth
                     + config.minMargin.child,
                 y : v.y,
+                r : 5
             });
             v.children.forEach((w) => {
                 if (w.show) {
                     edges.value.push({
                         class : "to",
                         id : w.id,
-                        v : { x : v.x - v.width / 2 + v.maxwidth 
+                        type : "subdir",
+                        v : { x : v.x - v.width / 2 + v.maxWidth 
                                 + config.minMargin.child, y : v.y },
                         w : { x : w.x - w.width / 2, y : w.y }
                     })
@@ -57,6 +76,8 @@ const show = (v) => {
     };
     walk(v);
 }
+
+import AsyncLock from 'async-lock';
 let lock = new AsyncLock();
 const update = () => {
     lock.acquire('update', () => {
@@ -65,46 +86,38 @@ const update = () => {
     })
 }
 
-import service from '../utils/request';
-let tree = {};
-service.get("datanode/root").then((res) => {
-    tree.name = res.data.name;
-    tree.id = res.data.id;
+import * as datanode from '@/api/datanode';
+datanode.getRoot().then((res) => {
+    tree.name = res.name;
+    tree.id = res.id;
     tree.show = true;
-    tree.hasChildren = res.data.hasChildren;
+    tree.hasChildren = res.hasChildren;
     update();
-});
-const getChildren = async (id) => {
-    const res = await service.get(`datanode/${id}/children`);
-    let children = [];
-    res.data.forEach((child) => {
-        children.push({
-            id : child.id,
-            name : child.name,
-            hasChildren : child.hasChildren,
-        })
-    });
-    return children;
-} 
+})
+
+
 
 </script>
 
 <template>
-    <svg class="screen" width="90%" height="100%" xmlns="http://www.w3.org/2000/svg" 
+    <svg class="screen" width="85vw" height="85vh" xmlns="http://www.w3.org/2000/svg" 
         viewBox="0 0 1000 1000" version="1.1">
-        <Node v-for="v in nodes" :key="v.id" :node="v" 
+        <NodeItem v-for="v in nodes" :key="v.id" :node="v"
             @sizeChange="(width, height) => {
                 v.width = width;
                 v.height = height;
                 update();
             }"
-        />
-        <Edge v-for="e in edges" :key="e.id" :class="e.class" :id="e.id" :v="e.v" :w="e.w" />
-        <Controller v-for="c in controllers" :key="c.node.id" :id="c.node.id"
-            :x="c.x" :y="c.y" r="5" :show="c.showChildren"
+         />
+        <EdgeItem v-for="(e, i) in edges" :key="i"
+            :v="e.v" :w="e.w" :type="e.type"/>
+        <ControllerItem v-for="c in controllers" :key="c.node.id"
+            :x="c.x" :y="c.y" :r="c.r" :show="c.showChildren" 
             @show="async () => {
-                if (c.node.children.length === 0)
-                    c.node.children = await getChildren(c.node.id);
+                if (c.node.children.length === 0) {
+                    c.node.children = (await datanode.getChildren(c.node.id))
+                                    .map(child => init(child));
+                }
                 c.node.children.forEach(child => child.show = true);
                 update();
             }"

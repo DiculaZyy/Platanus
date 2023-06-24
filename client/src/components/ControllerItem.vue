@@ -1,9 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-const props = defineProps(['x', 'y', 'r', 'show']);
-const _show = ref(props.show);
-const emits = defineEmits(['show', 'hide'])
 
+const props = defineProps<{
+    x : number;
+    y : number;
+    r : number;
+    show : boolean;
+}>();
+
+const _show = ref(props.show);
+
+defineEmits<{
+    (e : 'show') : void;
+    (e : 'hide') : void;
+}>();
 
 </script>
 

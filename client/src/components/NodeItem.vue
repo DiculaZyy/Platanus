@@ -1,22 +1,27 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
-const props = defineProps(['node']);
+import { type Node, type Area } from '@/types/items';
 
-const emits = defineEmits({
-    sizeChange(width, height) {
-        return width > 0 && height > 0;
-    }
-});
+const props = defineProps<{
+    node : Node;
+}>();
 
-const nameArea = ref({ width : 0, height : 0 });
-const nameRef = ref();
+const emits = defineEmits<{
+    ( e : 'sizeChange', width : number, height : number ) : void;
+}>();
+
+const nameArea = ref<Area>({ width : 0, height : 0 });
+
+const nameRef = ref<SVGTextElement | null>(null);
 onMounted(() => {
-    nameArea.value = nameRef.value.getBBox();
-    const width= Math.max(props.node.width, nameArea.value.width * 1.2);
-    const height = Math.max(props.node.height, nameArea.value.height * 1.2);
-    if (width > props.node.width || height > props.node.height) {
-        emits('sizeChange', width, height);
+    if (nameRef.value instanceof SVGTextElement) {
+        nameArea.value = nameRef.value.getBBox();
+        const width= Math.max(props.node.width, nameArea.value.width * 1.2);
+        const height = Math.max(props.node.height, nameArea.value.height * 1.2);
+        if (width > props.node.width || height > props.node.height) {
+            emits('sizeChange', width, height);
+        }
     }
 });
 

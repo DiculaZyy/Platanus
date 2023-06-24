@@ -11,8 +11,36 @@ export const config = {
     }
 }
 
-class Tree {
-    constructor(tree) {
+export interface Tree {
+    id : string;
+    name : string;
+    show : boolean;
+    x : number;
+    y : number;
+    height : number;
+    width : number;
+    maxWidth : number;
+    hasChildren : boolean;
+    children : Array<Tree>;
+    showChildren : boolean;
+}
+
+interface VoidTree {
+    id? : string;
+    name? : string;
+    show? : boolean;
+    x? : number;
+    y? : number;
+    height? : number;
+    width? : number;
+    maxWidth? : number;
+    hasChildren? : boolean;
+    children? : Array<Tree>;
+    showChildren? : boolean;
+}
+
+class _Tree implements Tree {
+    constructor(tree : DrawTree) {
         this.id = tree.id;
         this.name = tree.name;
         this.show = tree.show;
@@ -20,32 +48,49 @@ class Tree {
         this.y = tree.y;
         this.height = tree.height;
         this.width = tree.width;
-        this.maxwidth = tree.maxwidth;
+        this.maxWidth = tree.maxWidth;
         this.hasChildren = tree.hasChildren;
         this.children = (tree.children ? tree.children.map((value) => {
-            return new Tree(value);
-        }) : []).concat(tree.unshownChildren ? tree.unshownChildren : []);
+            return new _Tree(value);
+        }) : []);
+        if (tree.unshownChildren) {
+            this.children.concat(tree.unshownChildren);
+        }
         this.showChildren = tree.showChildren;
     }
+    id : string;
+    name : string;
+    show : boolean;
+    x : number;
+    y : number;
+    height : number;
+    width : number;
+    maxWidth : number;
+    hasChildren : boolean;
+    children : Array<Tree>;
+    showChildren : boolean;
 }
 
-class DrawTree {
-    constructor(tree, parent = null, depth = 0, number = 0) {
+class DrawTree implements Tree {
+    constructor(tree : Tree, parent : DrawTree | null = null,
+                depth = 0, number = 0) {
         this.id = tree.id;
         this.name = tree.name;
         this.show = tree.show || false;
-        this.hasChildren = tree.hasChildren ||
-                           tree.children && tree.children.length > 0;
-        this.children = tree.children ? tree.children.map((value, index) => {
-            return value.show && new DrawTree(value, this, depth + 1, index);
-        }).filter(value => value) : [];
+        this.hasChildren = tree.hasChildren 
+                        || tree.children !== undefined
+                        &&  tree.children.length > 0;
+        this.children = tree.children !== undefined 
+            ? tree.children.filter(value => value.show).map((value, index) => {
+                return new DrawTree(value, this, depth + 1, index);
+            }) : [] as Array<DrawTree>;
+        this.showChildren = this.children.length > 0;
         this.unshownChildren = tree.children 
             ? tree.children.filter(value => !value.show) 
             : [];
-        this.showChildren = this.children.length > 0;
         this.width = tree.width || config.defaultSize.width;
         this.height = tree.height || config.defaultSize.height;
-        this.maxwidth = this.width;
+        this.maxWidth = this.width;
         this.parent = parent;
         this.depth = depth;
         this.number = number;
@@ -60,7 +105,7 @@ class DrawTree {
         this._leftSibling = null;
     }
 
-    get right() {
+    get right() : DrawTree | null {
         return (this.thread || (
             this.children.length > 0
             ? this.children[this.children.length - 1]
@@ -68,7 +113,7 @@ class DrawTree {
         );
     }
 
-    get left() {
+    get left() : DrawTree | null {
         return (this.thread || (
             this.children.length > 0
             ? this.children[0]
@@ -77,7 +122,7 @@ class DrawTree {
     }
 
     get leftSibling() {
-        if (this.leftMostSibling)
+        if (this.leftMostSibling && this.parent)
             this._leftSibling = this.parent.children[this.number - 1];
         return this._leftSibling;
     }
@@ -91,11 +136,34 @@ class DrawTree {
         }
         return this._leftMostSibling;
     }
+
+    id : string;
+    name : string;
+    show : boolean;
+    x : number;
+    y : number;
+    height : number;
+    width : number;
+    maxWidth : number;
+    hasChildren : boolean;
+    children : Array<DrawTree>;
+    unshownChildren : Array<Tree>;
+    showChildren : boolean;
+    parent : DrawTree | null;
+    depth : number;
+    number : number;
+    offset : number;
+    change : number;
+    shift : number;
+    ancestor : DrawTree;
+    thread : DrawTree | null;
+    _leftMostSibling : DrawTree | null;
+    _leftSibling : DrawTree | null;
 }
 
-const firstWalk = (v) => {
+const firstWalk = (v : DrawTree) => {
     if (v.children.length === 0) {
-        if (v.leftMostSibling) {
+        if (v.leftMostSibling && v.leftSibling) {
             v.y = v.leftSibling.y 
                 + v.leftSibling.height / 2
                 + v.height / 2
@@ -127,9 +195,9 @@ const firstWalk = (v) => {
     return v;
 }
 
-const apportion = (v, defaultAncestor) => {
+const apportion = (v : DrawTree, defaultAncestor : DrawTree) => {
     const w = v.leftSibling;
-    if (w) {
+    if (w && v.leftMostSibling) {
         let vOuterRight = v;
         let vInnerRight = v;
         let vInnerLeft = w;
@@ -138,15 +206,17 @@ const apportion = (v, defaultAncestor) => {
         let sOuterRight = v.offset;
         let sInnerRight = v.offset;
         let sInnerLeft = vInnerLeft.offset;
-        let sOuterLeft = vOuterLeft.offset;
+        let sOuterLeft = vOuterLeft?.offset || 0;
 
-        while (vInnerLeft.right && vInnerRight.left) {
+        while (vInnerLeft.right && vInnerRight.left
+            && vOuterLeft.left && vOuterRight.right) {
             vInnerLeft = vInnerLeft.right;
             vInnerRight = vInnerRight.left;
             vOuterLeft = vOuterLeft.left;
             vOuterRight = vOuterRight.right;
 
-            vOuterRight.ancestor = v;
+            if (vOuterRight)
+                vOuterRight.ancestor = v;
 
             const shift = (vInnerLeft.y + vInnerLeft.height / 2 + sInnerLeft)
                         - (vInnerRight.y - vInnerRight.height / 2 + sInnerRight)
@@ -162,7 +232,7 @@ const apportion = (v, defaultAncestor) => {
             sInnerRight += vInnerRight.offset;
             sOuterRight += vOuterRight.offset;
         }
-        if (vInnerLeft.right && !vOuterRight.right) {
+        if (vInnerLeft.right && !vOuterRight?.right) {
             vOuterRight.thread = vInnerLeft.right;
             vOuterRight.offset += sInnerLeft - sOuterRight;
         }
@@ -175,8 +245,9 @@ const apportion = (v, defaultAncestor) => {
     return defaultAncestor;
 }
 
-const ancestor = (w, v, defaultAncestor) => {
-    if (v.parent.children.includes(w.ancestor)) {
+const ancestor = (w : DrawTree, v : DrawTree, 
+        defaultAncestor : DrawTree) => {
+    if (v.parent && v.parent.children.includes(w.ancestor)) {
         return w.ancestor;
     }
     else {
@@ -184,7 +255,7 @@ const ancestor = (w, v, defaultAncestor) => {
     }
 }
 
-const moveSubtree = (wLeft, wRight, shift) => {
+const moveSubtree = (wLeft : DrawTree, wRight : DrawTree, shift : number) => {
     const cnt = wRight.number - wLeft.number;
     wRight.change -= shift / cnt;
     wRight.shift += shift;
@@ -193,10 +264,10 @@ const moveSubtree = (wLeft, wRight, shift) => {
     wRight.offset += shift;
 }
 
-const executeShifts = (v) => {
+const executeShifts = (v : DrawTree) => {
     let shift = 0;
     let change = 0;
-    v.children.toReversed().forEach((w) => {
+    v.children.concat().reverse().forEach((w) => {
         w.y += shift;
         w.offset += shift;
         change += w.change;
@@ -204,43 +275,64 @@ const executeShifts = (v) => {
     })
 }
 
-const secondWalk= (v, maxwidths, mod = 0, depth = 0, min = null) => {
+const secondWalk= (v : DrawTree, maxWidths : Map<number, number>, 
+                mod = 0, depth = 0, min : number | null = null) => {
     v.y += mod;
-    if (maxwidths.has(depth)) {
-        maxwidths.set(depth, Math.max(maxwidths.get(depth), v.width));
+    const maxWidth = maxWidths.get(depth)
+    if (maxWidth) {
+        maxWidths.set(depth, Math.max(maxWidth, v.width));
     }
     else
-        maxwidths.set(depth, v.width);
+        maxWidths.set(depth, v.width);
     const y = v.y - v.height / 2 - config.minMargin.sibling;
     if (min === null || y < min) {
         min = y;
     }
     v.children.forEach((w) => {
-        min = secondWalk(w, maxwidths, mod + v.offset, depth + 1, min);
+        min = secondWalk(w, maxWidths, mod + v.offset, depth + 1, min);
     })
     return min;
 }
 
-const thirdWalk = (tree, maxwidths, n, depth = 0) => {
+const thirdWalk = (tree : DrawTree, maxWidths : Map<number, number>,
+                    n : number, depth = 0) => {
     tree.y += n;
-    tree.maxwidth = maxwidths.get(depth)
+    const maxWidth = maxWidths.get(depth)
+    if (maxWidth)
+        tree.maxWidth = maxWidth;
     tree.x += tree.width / 2 + config.minMargin.parent;
     tree.children.forEach((c) => {
-        c.x += tree.x - tree.width / 2 + tree.maxwidth + config.minMargin.child;
-        thirdWalk(c, maxwidths, n, depth + 1);
+        c.x += tree.x - tree.width / 2 + tree.maxWidth + config.minMargin.child;
+        thirdWalk(c, maxWidths, n, depth + 1);
     })
 }
 
-const buchheim = (tree) => {
+const buchheim = (tree : DrawTree) => {
     const dt = firstWalk(tree);
-    let maxwidths = new Map();
+    const maxwidths = new Map();
     const min = secondWalk(dt, maxwidths);
     thirdWalk(dt, maxwidths, min < 0 ? -min : 0);
     return dt;
 }
 
-export const layout = (tree) => {
-    let drawtree = new DrawTree(tree);
+export const layout = (tree : Tree) => {
+    const drawtree = new DrawTree(tree);
     buchheim(drawtree);
-    return new Tree(drawtree);
+    return new _Tree(drawtree);
+}
+
+export const init = (tree : VoidTree) : Tree => {
+    return {
+        id : tree.id || '',
+        name : tree.name || '',
+        show : tree.show || false,
+        x : tree.x || 0,
+        y : tree.y || 0,
+        height : tree.height || 0,
+        width : tree.width || 0,
+        maxWidth : tree.maxWidth || 0,
+        hasChildren : tree.hasChildren || false,
+        children : tree.children || [] as Array<Tree>,
+        showChildren : tree.showChildren || false,
+    }
 }
