@@ -7,20 +7,23 @@
     "dev": "nodemon --config nodemon.json",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js",
+    "dist": "rimraf ./dist && ncc build build/index.js",
     "compile-schemas": "rimraf src/types && json2ts -i src/schemas -o src/types"
   },
   "author": "DiculaZyy",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.1.2",
+    "@vercel/ncc": "^0.36.1",
     "json-schema-to-typescript": "^13.0.1",
-    "nodemon": "^2.0.22",
+    "nodemon": "^1.14.9",
     "rimraf": "^5.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
     "@fastify/cors": "^8.3.0",
+    "chokidar": "^3.5.3",
     "fastify": "^4.17.0",
     "fastify-plugin": "^4.5.0",
     "nanoid": "^3.3.6"

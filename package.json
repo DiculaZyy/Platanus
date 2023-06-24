@@ -1,10 +1,8 @@
 {
-  "name": "node-vue-todo",
+  "name": "platanus",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-  },
+  "description": "通过节点图的形式显示文件  \r **目前未完成**",
+  "scripts": {},
   "keywords": [],
   "author": "DiculaZyy",
   "license": "MIT",

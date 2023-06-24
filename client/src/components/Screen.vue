@@ -55,7 +55,6 @@ const show = (v) => {
             });
         }
     };
-    console.log(v);
     walk(v);
 }
 let lock = new AsyncLock();

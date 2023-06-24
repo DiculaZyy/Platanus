@@ -1,0 +1,26 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "copy-client": "rimraf ./client && copyfiles ../client/dist/** ./client",
+    "copy-server": "rimraf ./server && copyfiles ../server/dist/** ./server",
+    "copy": "npm run copy-client && npm run copy-server",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "DiculaZyy",
+  "license": "MIT",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "electron": "^25.2.0",
+    "electron-builder": "^24.4.0",
+    "rimraf": "^5.0.1"
+  },
+  "build": {
+    "appId": "com.diculazyy.platanus",
+    "productName": "Platanus"
+  }
+}

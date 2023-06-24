@@ -13,12 +13,9 @@ const nameArea = ref({ width : 0, height : 0 });
 const nameRef = ref();
 onMounted(() => {
     nameArea.value = nameRef.value.getBBox();
-    console.log(props.node.name);
     const width= Math.max(props.node.width, nameArea.value.width * 1.2);
     const height = Math.max(props.node.height, nameArea.value.height * 1.2);
-    console.log(props.node.name, width, height);
     if (width > props.node.width || height > props.node.height) {
-        console.log(props.node.name, "emit");
         emits('sizeChange', width, height);
     }
 });
