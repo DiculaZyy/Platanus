@@ -5,6 +5,7 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "type": { "type": "string" },
-        "hasChildren": { "type": "boolean" }
+        "parentCount": { "type": "number" },
+        "childCount": { "type": "number" }
     }
 }

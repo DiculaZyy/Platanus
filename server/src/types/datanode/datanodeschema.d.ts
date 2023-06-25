@@ -9,6 +9,7 @@ export interface DataNodeSchema {
   id?: string;
   name?: string;
   type?: string;
-  hasChildren?: boolean;
+  parentCount?: number;
+  childCount?: number;
   [k: string]: unknown;
 }

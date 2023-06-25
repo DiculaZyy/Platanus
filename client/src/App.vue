@@ -12,7 +12,11 @@ import { RouterLink, RouterView } from 'vue-router'
     </div>
   </header>
 
-  <RouterView />
+  <RouterView v-slot="{ Component }">
+    <KeepAlive>
+      <component :is="Component" />
+    </KeepAlive>
+  </RouterView>
 </template>
 
 <style scoped>
@@ -33,6 +37,4 @@ nav a {
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
-
-
 </style>

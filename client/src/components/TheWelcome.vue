@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useFilesStore } from '@/stores/files';
+import { useDataNodeStore } from '@/stores/datanode';
 import { open } from '@/api/files';
 
 const files = useFilesStore();
+const datanode = useDataNodeStore();
 
 </script>
 
@@ -10,7 +12,10 @@ const files = useFilesStore();
     <h1>Platanus</h1>
     <div class="input">
         <input v-model="files.root" placeholder="输入根目录"/>
-        <button @click="async () => { open(files.root); }">确定</button>
+        <button @click="async () => { 
+          await open(files.root);
+          await datanode.resetRoot();
+        }">确定</button>
     </div>
 </template>
 

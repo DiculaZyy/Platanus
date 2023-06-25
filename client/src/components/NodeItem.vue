@@ -17,7 +17,7 @@ const nameRef = ref<SVGTextElement | null>(null);
 onMounted(() => {
     if (nameRef.value instanceof SVGTextElement) {
         nameArea.value = nameRef.value.getBBox();
-        const width= Math.max(props.node.width, nameArea.value.width * 1.2);
+        const width = Math.max(props.node.width, nameArea.value.width * 1.2);
         const height = Math.max(props.node.height, nameArea.value.height * 1.2);
         if (width > props.node.width || height > props.node.height) {
             emits('sizeChange', width, height);

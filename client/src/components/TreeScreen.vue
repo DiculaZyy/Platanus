@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onActivated, onDeactivated } from 'vue';
+
+const isActivated = ref(false);
+
+onActivated(() => isActivated.value = true);
+onDeactivated(() => isActivated.value = false);
+
 import svgPanZoom from 'svg-pan-zoom'
 
+let zoom = undefined as undefined | ReturnType<typeof svgPanZoom>;
 onMounted(() => {
-    svgPanZoom('.screen', {
+    zoom = svgPanZoom('.screen', {
         dblClickZoomEnabled: false,
         fit: true,
         center: true,
@@ -13,7 +20,6 @@ onMounted(() => {
 })
 
 import { layout, config, init, type Tree } from '../utils/drawtree';
-let tree : Tree = init({});
 
 import { type Node, type Point } from '@/types/items';
 import NodeItem from './NodeItem.vue';
@@ -36,13 +42,14 @@ const controllers = ref<Array<{
 }>>([]);
 
 
-const show = (v : Tree) => {
+const show = (v : Tree | undefined) => {
     nodes.value = [];
     edges.value = [];
     controllers.value = [];
+    if (v === undefined) return ;
     const walk = (v : Tree) => {
         nodes.value.push(v);
-        if (v.hasChildren) {
+        if (v.childCount > 0) {
             edges.value.push({
                 id : v.id,
                 class : "from",
@@ -77,25 +84,39 @@ const show = (v : Tree) => {
     walk(v);
 }
 
+let tree = undefined as Tree | undefined;
+
 import AsyncLock from 'async-lock';
 let lock = new AsyncLock();
 const update = () => {
     lock.acquire('update', () => {
-        tree = layout(tree);
+        if (tree)
+            tree = layout(tree);
         show(tree);
     })
 }
 
-import * as datanode from '@/api/datanode';
-datanode.getRoot().then((res) => {
-    tree.name = res.name;
-    tree.id = res.id;
-    tree.show = true;
-    tree.hasChildren = res.hasChildren;
+import { useDataNodeStore } from '@/stores/datanode';
+import { watch } from 'vue';
+import { storeToRefs } from 'pinia';
+
+const datanodeStore = useDataNodeStore();
+const { rootnode } = storeToRefs(datanodeStore);
+
+watch(rootnode, (newRootnode) => {
+    console.log('node');
+    tree = undefined;
+    if (newRootnode) {
+        tree = init(newRootnode);
+        tree.show = true;
+    }
+    if (isActivated.value) update(); 
+    if (zoom) zoom.center();
+}, { immediate : true });
+
+onActivated(() => {
     update();
 })
-
-
 
 </script>
 
@@ -115,8 +136,10 @@ datanode.getRoot().then((res) => {
             :x="c.x" :y="c.y" :r="c.r" :show="c.showChildren" 
             @show="async () => {
                 if (c.node.children.length === 0) {
-                    c.node.children = (await datanode.getChildren(c.node.id))
-                                    .map(child => init(child));
+                    const children = await datanodeStore.getChildren(c.node.id);
+                    if (children) {
+                        c.node.children = children.map(child => init(child));
+                    }
                 }
                 c.node.children.forEach(child => child.show = true);
                 update();

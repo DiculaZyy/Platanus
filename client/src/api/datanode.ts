@@ -4,8 +4,12 @@ export interface DataNode  {
     id : string;
     name : string;
     type : string;
-    hasChildren : boolean;
+    parentCount : number;
+    childCount : number;
+    parents? : Array<DataNode>;
+    children? : Array<DataNode>;
 }
+
 
 export const getRoot = async () => {
     return service.get<DataNode>("datanode/root").then((res) => {

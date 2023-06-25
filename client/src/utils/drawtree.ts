@@ -11,6 +11,7 @@ export const config = {
     }
 }
 
+
 export interface Tree {
     id : string;
     name : string;
@@ -20,24 +21,11 @@ export interface Tree {
     height : number;
     width : number;
     maxWidth : number;
-    hasChildren : boolean;
-    children : Array<Tree>;
+    children : Array<Tree>
+    childCount : number;
     showChildren : boolean;
 }
 
-interface VoidTree {
-    id? : string;
-    name? : string;
-    show? : boolean;
-    x? : number;
-    y? : number;
-    height? : number;
-    width? : number;
-    maxWidth? : number;
-    hasChildren? : boolean;
-    children? : Array<Tree>;
-    showChildren? : boolean;
-}
 
 class _Tree implements Tree {
     constructor(tree : DrawTree) {
@@ -49,7 +37,7 @@ class _Tree implements Tree {
         this.height = tree.height;
         this.width = tree.width;
         this.maxWidth = tree.maxWidth;
-        this.hasChildren = tree.hasChildren;
+        this.childCount = tree.childCount;
         this.children = (tree.children ? tree.children.map((value) => {
             return new _Tree(value);
         }) : []);
@@ -66,7 +54,7 @@ class _Tree implements Tree {
     height : number;
     width : number;
     maxWidth : number;
-    hasChildren : boolean;
+    childCount : number;
     children : Array<Tree>;
     showChildren : boolean;
 }
@@ -77,9 +65,7 @@ class DrawTree implements Tree {
         this.id = tree.id;
         this.name = tree.name;
         this.show = tree.show || false;
-        this.hasChildren = tree.hasChildren 
-                        || tree.children !== undefined
-                        &&  tree.children.length > 0;
+        this.childCount = tree.childCount;
         this.children = tree.children !== undefined 
             ? tree.children.filter(value => value.show).map((value, index) => {
                 return new DrawTree(value, this, depth + 1, index);
@@ -145,7 +131,7 @@ class DrawTree implements Tree {
     height : number;
     width : number;
     maxWidth : number;
-    hasChildren : boolean;
+    childCount : number;
     children : Array<DrawTree>;
     unshownChildren : Array<Tree>;
     showChildren : boolean;
@@ -321,18 +307,20 @@ export const layout = (tree : Tree) => {
     return new _Tree(drawtree);
 }
 
-export const init = (tree : VoidTree) : Tree => {
+import { type DataNode } from "@/api/datanode";
+
+export const init = (tree : DataNode) : Tree => {
     return {
-        id : tree.id || '',
-        name : tree.name || '',
-        show : tree.show || false,
-        x : tree.x || 0,
-        y : tree.y || 0,
-        height : tree.height || 0,
-        width : tree.width || 0,
-        maxWidth : tree.maxWidth || 0,
-        hasChildren : tree.hasChildren || false,
-        children : tree.children || [] as Array<Tree>,
-        showChildren : tree.showChildren || false,
+        id : tree.id,
+        name : tree.name,
+        show : false,
+        x : 0,
+        y : 0,
+        height : 0,
+        width : 0,
+        maxWidth : 0,
+        children : [] as Array<Tree>,
+        childCount : tree.childCount,
+        showChildren : false,
     }
 }

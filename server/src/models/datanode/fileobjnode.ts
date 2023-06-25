@@ -12,9 +12,11 @@ export abstract class FileObjNode {
         this.id = nanoid();
         this.nameInternal = name;
         if (typeof(parent) === 'string')
-            this.parent= rootnodes.create(parent);
-        else
-            this.parent= parent;
+            this.parent = rootnodes.create(parent);
+        else {
+            this.parent = parent;
+            this.parentCount = 1;
+        }
         this.parent.children.push(this);
         // logger.info(`New Node: ${this.parent.name} ---> ${this.path}`);
         console.log(`New Node (${this.id}): ${this.parent.name} ---> ${this.path}`);
@@ -63,8 +65,9 @@ export abstract class FileObjNode {
     private nameInternal : string;
     parent : FolderNode | rootnodes.RootDirNode;
     parentLinks  = [] as LinkNode[];
+    parentCount = 0;
     children = [] as FileObjNode[];
-    hasChildren = false;
+    childCount = 0;
 }
 
 export class FileNode extends FileObjNode {
@@ -91,8 +94,7 @@ export class FolderNode extends FileObjNode {
                     create(d, d.name, this);
                 }
             }
-            if (this.children.length > 0)
-                this.hasChildren = true;
+            this.childCount = this.children.length;
         })();
     }
     readonly type = 'folder' as 'folder';
