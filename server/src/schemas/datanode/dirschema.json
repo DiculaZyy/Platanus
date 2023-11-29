@@ -1,8 +1,0 @@
-{
-    "title" : "Dir Schema",
-    "type" : "object",
-    "properties" : {
-        "dir" : { "type": "string" },
-        "maxDepth" : { "type" : "number" }
-    }
-}

@@ -1,7 +1,0 @@
-{
-    "title": "Params Schema",
-    "type": "object",
-    "properties": {
-        "id": { "type": "string" }
-    }
-}
